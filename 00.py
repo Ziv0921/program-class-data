@@ -2,17 +2,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
+#import tensorflow as tf
+#from tensorflow import keras
+#from tensorflow.keras import layers
 
 data = pd.read_csv("QS.csv", encoding="latin1")
 
 #delete the wrong data
 data = data[~data["STATUS"].map(lambda x: isinstance(x, float))]
-
-
-
 
 #delete col we don't need
 data.drop(["RANK_2024"], axis="columns", inplace=True)
