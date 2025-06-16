@@ -639,6 +639,7 @@ dependencies = [
     { name = "numpy" },
     { name = "pandas" },
     { name = "tensorflow" },
+    { name = "tensorflow-keras" },
 ]
 
 [package.metadata]
@@ -647,6 +648,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.1.3" },
     { name = "pandas", specifier = ">=2.3.0" },
     { name = "tensorflow", specifier = ">=2.19.0" },
+    { name = "tensorflow-keras", specifier = ">=0.1" },
 ]
 
 [[package]]
@@ -810,6 +812,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/45/47/b0af0749f002720e62bbc65adec5130a108fe4082f1fd12bdfdef0ed27e4/tensorflow-2.19.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:10f4bfbd33ee23408b98c67e63654f4697845f005555dcc6b790ecfaeabd1308", size = 252717815 },
     { url = "https://files.pythonhosted.org/packages/01/12/a8ad8322a7cb2818e658a073feb2aa541d0e6a32b8e5ac838d46e0882687/tensorflow-2.19.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e28b26594cd793e7f52471b8f2d98aafc6d232868a366462d238f7967935a6f6", size = 645007905 },
     { url = "https://files.pythonhosted.org/packages/5c/98/d145af334fd5807d6ba1ead447bf0c57a36654ea58e726d70c0d09cae913/tensorflow-2.19.0-cp312-cp312-win_amd64.whl", hash = "sha256:5eae58946f5a22f4d5656a95e54c5d7aae5a5483c388922a207667d8858c37b9", size = 375961757 },
+]
+
+[[package]]
+name = "tensorflow-keras"
+version = "0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/76/e8/0f5b94acf8cb70dfe90efb8fb21026684bcccec9e46d3489f83112784dc0/tensorflow_keras-0.1.tar.gz", hash = "sha256:b385c253f07266a8c6a5027a1e98550ab68fd6d1ccd1a1ff438ae3fa37c110c0", size = 4710 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/f2/3390ee50e5bc4a764c51f960d99856e6c795e2945cf611cb1216254ab605/tensorflow_keras-0.1-py3-none-any.whl", hash = "sha256:f3070428c41638aaf5a97b7531908dcc35648d129b7cf9fb5f1cebd6957dd8fb", size = 5156 },
 ]
 
 [[package]]

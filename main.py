@@ -6,10 +6,14 @@ import matplotlib.pyplot as plt
 #from tensorflow import keras
 #from tensorflow.keras import layers
 
-data = pd.read_csv("QS.csv", encoding="latin1")
+from clean_rank import clean_rank
+
+data = pd.read_csv("files/QS.csv", encoding="latin1")
 
 #delete the wrong data
 data = data[~data["STATUS"].map(lambda x: isinstance(x, float))]
+
+data["RANK_2025"] = data["RANK_2025"].map(clean_rank)
 
 #delete col we don't need
 data.drop(["RANK_2024"], axis="columns", inplace=True)
@@ -31,4 +35,5 @@ data.drop(["Employment_Outcomes_Rank"], axis="columns", inplace=True)
 data.drop(["Sustainability_Rank"], axis="columns", inplace=True)
 
 
-data.to_csv('E.csv')
+
+data.to_csv('files/output/result.csv')
