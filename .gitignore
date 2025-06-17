@@ -174,3 +174,5 @@ Desktop.ini
 # *.json
 # *.xlsx
 # *.db
+/logs
+/models

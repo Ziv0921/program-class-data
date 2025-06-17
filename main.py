@@ -1,19 +1,26 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
 
-#import tensorflow as tf
-#from tensorflow import keras
-#from tensorflow.keras import layers
+import tensorflow as tf
+from tensorflow import keras
+from keras import layers
 
-from clean_rank import clean_rank
+import clean_data
+import settings
 
-data = pd.read_csv("files/QS.csv", encoding="latin1")
+settings.init()
+
+logs_dir = settings.logs_dir
+model_dir = settings.model_dir
+files_dir = settings.files_dir
+
+data = pd.read_csv(settings.get_file_path("QS.csv"), encoding="latin1")
 
 #delete & purge the wrong data
 data = data[~data["STATUS"].map(lambda x: isinstance(x, float))]
-data["RANK_2025"] = data["RANK_2025"].map(clean_rank)
+data["RANK_2025"] = data["RANK_2025"].map(clean_data.clean_rank)
+data["SIZE"] = data["SIZE"].map(clean_data.clean_size)
+data["RES."] = data["RES."].map(clean_data.clean_res)
 
 #delete col we don't need
 data.drop(["RANK_2024"], axis="columns", inplace=True)
@@ -35,27 +42,73 @@ data.drop(["Employment_Outcomes_Rank"], axis="columns", inplace=True)
 data.drop(["Sustainability_Rank"], axis="columns", inplace=True)
 
 # test
-#data.to_csv('files/output/result.csv')
+data.to_csv(settings.get_file_path("output/result.csv"))
 
 # 6:2:2
-x = data.drop(["RANK_2025"], axis=1) 
-y = data["RANK_2025"]
+RowCT = data.shape[0]
 
-# 第一次分割
-x_train_val, x_test, y_train_val, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+# random index
+indexes = np.random.permutation(RowCT)
 
-#第二次分割
-x_train, x_val, y_train, y_val = train_test_split(x_train_val, y_train_val, test_size=0.25, random_state=42)
+TD_index = indexes[:int(RowCT*0.6)]
+VD_index = indexes[int(RowCT*0.6):int(RowCT*0.8)]
+XD_index = indexes[int(RowCT*0.8):]
 
-#檢查比例
-print(f"訓練資料: {len(x_train)} 筆 ({len(x_train)/len(x)*100:.1f}%)")
-print(f"驗證資料: {len(x_val)} 筆 ({len(x_val)/len(x)*100:.1f}%)")
-print(f"測試資料: {len(x_test)} 筆 ({len(x_test)/len(x)*100:.1f}%)")
+# split data
+train_data = data.iloc[TD_index]
+val_data = data.iloc[VD_index]
+test_data = data.iloc[XD_index]
 
-#儲存資料
-x_train.to_csv('files/output/train_features.csv', index=False)
-y_train.to_csv('files/output/train_target.csv', index=False)
-x_val.to_csv('files/output/val_features.csv', index=False)
-y_val.to_csv('files/output/val_target.csv', index=False)
-x_test.to_csv('files/output/test_features.csv', index=False)
-y_test.to_csv('files/output/test_target.csv', index=False)
+# normalization
+tv_data = pd.concat([train_data, val_data])
+mean = tv_data.mean()
+std = tv_data.std()
+
+train_data = (train_data - mean) / std
+
+y_train = np.array(train_data["RANK_2025"])
+x_train = np.array(train_data.drop(["RANK_2025"], axis="columns"))
+y_val = np.array(val_data["RANK_2025"])
+x_val = np.array(val_data.drop(["RANK_2025"], axis="columns"))
+x_test = np.array(test_data.drop(["RANK_2025"], axis="columns"))
+y_test = np.array(test_data["RANK_2025"])
+
+# build model
+model = keras.Sequential(name="QS_Rank_Predictor")
+model.add(layers.Dense(64, activation='relu', input_shape=(x_train.shape[1],)))
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(1))
+
+print(model.summary())
+
+# compile model
+model.compile(optimizer=keras.optimizers.Adam(0.001),
+              loss=keras.losses.MeanAbsoluteError(),
+              metrics=[keras.metrics.MeanAbsoluteError()])
+
+# save model
+model_cbk = keras.callbacks.TensorBoard(log_dir = logs_dir)
+model_mckpt = keras.callbacks.ModelCheckpoint(settings.get_model_path("QS_Rank_Predictor.h5"),  
+                                                  save_best_only=True, 
+                                                  monitor='val_mean_absolute_error', 
+                                                  mode='min')
+
+# train model
+# """
+history = model.fit(x_train, y_train,
+            validation_data=(x_val, y_val),
+            epochs=300,
+            batch_size=64,
+            callbacks=[model_cbk, model_mckpt],
+            verbose=1)
+# """
+
+# print(history.history.keys())
+
+# check accuracy
+model.load_weights(settings.get_model_path("QS_Rank_Predictor.h5"))
+y_pred = model.predict(x_test)
+y_perd = np.reshape(y_pred * std["RANK_2025"] + mean["RANK_2025"], (y_pred.shape[0],))
+
+p_error = np.mean(np.abs(y_test-y_pred)) / np.mean(y_test)
+print(f"Prediction Error: {p_error}")
