@@ -59,12 +59,19 @@ train_data = data.iloc[TD_index]
 val_data = data.iloc[VD_index]
 test_data = data.iloc[XD_index]
 
+# save data
+# train_data.to_csv(settings.get_file_path("output/train.csv"), index=False)
+# val_data.to_csv(settings.get_file_path("output/val.csv"), index=False)
+# test_data.to_csv(settings.get_file_path("output/test.csv"), index=False)
+
 # normalization
 tv_data = pd.concat([train_data, val_data])
 mean = tv_data.mean()
 std = tv_data.std()
 
 train_data = (train_data - mean) / std
+val_data = (val_data - mean) / std
+test_data = (test_data - mean) / std
 
 y_train = np.array(train_data["RANK_2025"])
 x_train = np.array(train_data.drop(["RANK_2025"], axis="columns"))
@@ -100,7 +107,7 @@ history = model.fit(x_train, y_train,
             epochs=300,
             batch_size=64,
             callbacks=[model_cbk, model_mckpt],
-            verbose=1)
+            )
 # """
 
 # print(history.history.keys())
@@ -111,4 +118,4 @@ y_pred = model.predict(x_test)
 y_perd = np.reshape(y_pred * std["RANK_2025"] + mean["RANK_2025"], (y_pred.shape[0],))
 
 p_error = np.mean(np.abs(y_test-y_pred)) / np.mean(y_test)
-print(f"Prediction Error: {p_error}")
+print(f"Prediction Error: {p_error: 5.2%}%")
