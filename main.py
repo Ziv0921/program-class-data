@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-import tensorflow as tf
 from tensorflow import keras
 from keras import layers
 
@@ -115,7 +114,8 @@ history = model.fit(x_train, y_train,
 # check accuracy
 model.load_weights(settings.get_model_path("QS_Rank_Predictor.h5"))
 y_pred = model.predict(x_test)
-y_perd = np.reshape(y_pred * std["RANK_2025"] + mean["RANK_2025"], (y_pred.shape[0],))
+y_pred_denorm = np.reshape(y_pred * std["RANK_2025"] + mean["RANK_2025"], (y_pred.shape[0],))
+y_test_denorm = y_test * std["RANK_2025"] + mean["RANK_2025"]
 
-p_error = np.mean(np.abs(y_test-y_pred)) / np.mean(y_test)
-print(f"Prediction Error: {p_error: 5.2%}%")
+p_error = np.mean(np.abs(y_test_denorm - y_pred_denorm)) / np.mean(y_test_denorm)
+print(f"Prediction Error: {p_error:.2%}")
